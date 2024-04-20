@@ -1,0 +1,52 @@
+# author: dmdhrumilmistry
+rules:
+  - id: BOPLA
+    pattern: |
+      class Meta:
+        ...
+        fields = '__all__'
+        ...
+
+    message: using '__all__' field in serializer is not safe, it leads to Mass Assignment/BOPLA vulnerability. Instead use fields as tuple to whitelist fields that needs to be updated
+    languages:
+      - python
+    severity: WARNING
+
+  - id: BOPLA
+    patterns:
+      - pattern: |
+          $MODEL.objects.$METHOD(..., $PAYLOAD, ...)
+      - pattern-not-inside: |
+          $DICT_PAYLOAD = {...}
+          ...
+          $MODEL.objects.$METHOD(..., $PAYLOAD, ...)
+          ...
+      - pattern-not-inside: |
+          $DICT_PAYLOAD = {...}
+          ...
+            $MODEL.objects.$METHOD(..., $PAYLOAD, ...)
+          ...
+      - pattern-not-inside: |
+          $MODEL.objects.$METHOD(..., **validated_data, ...)
+      - metavariable-pattern:
+          metavariable: $METHOD
+          pattern-either:
+            - pattern: create
+            - pattern: update
+            - pattern: get_or_update
+            - pattern: acreate
+            - pattern: aupdate
+            - pattern: aget_or_update
+    message: BOPLA Attack Vector Detected! Make sure request payloads aren't directly passed for creating/updating model data.
+    languages:
+      - python
+    severity: WARNING
+    metadata:
+      category: security
+      technology:
+        - django
+      impact: MEDIUM
+      likelihood: MEDIUM
+      confidence: MEDIUM
+      subcategory:
+        - audit

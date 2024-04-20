@@ -1,0 +1,55 @@
+# author: dmdhrumilmistry
+rules:
+  - id: RCE-BOPLA-Attack-Surface
+    mode: taint
+
+    pattern-sources:
+      - pattern-either:
+        - patterns:
+            - pattern: $VAR.get(...)
+    
+
+    pattern-propagators:
+      - pattern: $MODIFIEDPAYLOAD = $FUNCTION(...,$PAYLOAD,...)
+        from: $PAYLOAD
+        to: $MODIFIEDPAYLOAD
+      - pattern: |
+          $NEWPAYLOAD = $PAYLOAD.copy()
+        from: $PAYLOAD
+        to: $NEWPAYLOAD
+
+    pattern-sinks:
+      - pattern-either:
+        - patterns:
+            - pattern: |
+                setattr($OBJ, $PARAM, $VALUE)
+
+            - metavariable-pattern:
+                metavariable: $PARAM
+                pattern-either:
+                  - pattern: $DATA.get(...)
+                  - pattern: $DATA[...]
+
+            - metavariable-pattern:
+                metavariable: $VALUE
+                pattern-either:
+                - pattern: $DATA.get(...)
+                - pattern: $DATA[...]
+    
+            
+    message: Found RCE and BOPLA attack surface. Use whitelist approach to set key attrs. 
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      confidence: MEDIUM
+      likelihood: HIGH
+      impact: HIGH
+      owasp:
+        - A3:2021 Injection
+      technology:
+        - django
+        - python
+    languages:
+      - python
+    severity: WARNING

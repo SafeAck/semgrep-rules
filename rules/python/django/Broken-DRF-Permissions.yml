@@ -1,0 +1,77 @@
+# author: dmdhrumilmistry
+rules:
+  - id: Broken-DRF-Permission-Missing-Has-Permission-Check
+    pattern-either:
+      - patterns:
+          - pattern: |
+              class $PERMISSON(..., $BASEPERMISSION, ...):
+                ...
+                def has_object_permission(...):
+                  ...
+                  
+          - pattern-not-inside: |
+              class $PERMISSON(..., $BASEPERMISSION, ...):
+                ...
+                def has_permission(...):
+                  ...
+
+          - metavariable-pattern:
+              metavariable: $BASEPERMISSION
+              pattern-either:
+                - pattern: rest_framework.permissions.BasePermission
+
+
+    message: Found custom permission with missing `has_permission` check. This can lead to broken permissions/access-control allowing attacker to bypass authorization checks. Only `has_object_permission` check has been implemented, if `has_permission` is not used return False in its block as default value.
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      owasp:
+        - A1:2021 Broken Access Control 
+      technology:
+        - django
+        - djangorestframework
+    languages:
+      - python
+    severity: WARNING
+
+
+  - id: Broken-DRF-Permission-Missing-Has-Object-Permission-Check
+    pattern-either:
+      - patterns:
+          - pattern: |
+              class $PERMISSON(..., $BASEPERMISSION, ...):
+                ...
+                def has_permission(...):
+                  ...
+                  
+          - pattern-not-inside: |
+              class $PERMISSON(..., $BASEPERMISSION, ...):
+                ...
+                def has_object_permission(...):
+                  ...
+
+          - metavariable-pattern:
+              metavariable: $BASEPERMISSION
+              pattern-either:
+                - pattern: rest_framework.permissions.BasePermission
+
+    message: Found custom permission with missing `has_object_permission` check. This can lead to broken permissions/access-control allowing attacker to bypass authorization checks. Only `has_permission` check has been implemented, if `has_object_permission` is not used return False in its block as default value.
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      owasp:
+        - A1:2021 Broken Access Control 
+      technology:
+        - django
+        - djangorestframework
+    languages:
+      - python
+    severity: WARNING

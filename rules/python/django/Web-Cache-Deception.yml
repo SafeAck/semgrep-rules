@@ -1,0 +1,34 @@
+# author: dmdhrumilmistry
+rules:
+  - id: Web-Cache-Deception
+    pattern-either:
+      # Decorator Pattern
+      - patterns:
+          - pattern: |
+              @django.utils.decorators.method_decorator(django.views.decorators.cache.cache_page(...))
+              def $FUNC(...):
+                ...
+          - pattern-not-inside: |
+              @django.utils.decorators.method_decorator(django.views.decorators.cache.cache_page(...))
+              @django.utils.decorators.method_decorator(django.views.decorators.vary.vary_on_headers(...))
+              def $FUNC(...):
+                ...
+        
+      # Path pattern with comma for first and in between lines
+      - patterns:
+          - pattern: path(..., django.views.decorators.cache.cache_page(...)(...)),
+          - pattern-not-inside: path(..., django.views.decorators.cache.cache_page(...)(django.views.decorators.vary.vary_on_headers(...)(...))),
+
+      # Path pattern without comma for last line 
+      - patterns:
+          - pattern: path(..., django.views.decorators.cache.cache_page(...)(...))
+          - pattern-not-inside: path(..., django.views.decorators.cache.cache_page(...)(django.views.decorators.vary.vary_on_headers(...)(...)))
+
+    message: Found Web Cache Deception Attack Vector. Please use, vary_on_headers decorator/method if sensitive information is being returned in response to an authenticated user, else unauthenticated user will also get same response as auth user.
+    metadata:
+      references:
+        - https://www.django-rest-framework.org/api-guide/views/
+        - https://www.django-rest-framework.org/api-guide/viewsets/
+        - https://www.django-rest-framework.org/api-guide/authentication/
+    languages: [python]
+    severity: WARNING

@@ -1,0 +1,52 @@
+# author: dmdhrumilmistry
+rules:
+  - id: Write-Directory-Traversal-LFI
+    patterns:
+      - pattern-either:
+        - pattern: open($FILENAME, 'w')
+        - pattern: open($FILENAME, 'wb')
+        - pattern: open($FILENAME, 'a')
+
+    message: Found LFI attack vector allowing attacker to write data to injected file.
+    metadata:
+      route-detect:
+        fill: red
+      category: security
+      subcategory:
+        - vuln
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      owasp:
+        - A3:2017 Sensitive Data Exposure
+        - A3:2021 Injection
+      technology:
+        - django
+    languages:
+      - python
+    severity: WARNING
+
+  - id: Read-Directory-Traversal-LFI
+    patterns:
+      - pattern-either:
+        - pattern: open($FILENAME, 'r')
+        - pattern: open($FILENAME, 'rb')
+
+    message: Found LFI attack vector. 
+    metadata:
+      route-detect:
+        fill: red
+      category: security
+      subcategory:
+        - vuln
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      owasp:
+        - A3:2017 Sensitive Data Exposure
+        - A3:2021 Injection
+      technology:
+        - django
+    languages:
+      - python
+    severity: WARNING

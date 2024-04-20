@@ -1,0 +1,24 @@
+# author: dmdhrumilmistry
+rules:
+  - id: SQLi-Attack-Vectors
+    patterns:
+      - pattern-either:
+        - pattern: django.db.models.expressions.RawSQL(...)
+        - pattern: cursor.execute(...)
+
+    message: Found SQLi attack vector allowing attacker to execute SQL queries.
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      owasp:
+        - A3:2017 Sensitive Data Exposure
+        - A3:2021 Injection
+      technology:
+        - django
+    languages:
+      - python
+    severity: WARNING

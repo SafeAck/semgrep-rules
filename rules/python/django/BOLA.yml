@@ -1,0 +1,54 @@
+# author: dmdhrumilmistry
+rules:
+  - id: BOLA
+    mode: taint
+    pattern-sources:
+      - pattern-either: 
+        - pattern: request
+        - pattern: request.data[...]
+        - pattern: request.GET[...]
+        - pattern: request.POST[...]
+        - pattern: request.data.get(...)
+        - pattern: request.GET.get(...)
+        - pattern: request.POST.get(...)
+
+    pattern-propagators:
+      - pattern: $MODIFIEDPAYLOAD = json.loads($PAYLOAD)
+        from: $PAYLOAD
+        to: $MODIFIEDPAYLOAD
+      - pattern: |
+          $NEWREQUEST = $REQUEST.copy()
+        from: $REQUESTCOPY
+        to: $NEWREQUEST
+           
+
+    pattern-sinks:
+      - patterns:
+        - pattern-either:
+          - pattern: $MODEL.objects.filter(...,lead_id=...)
+          - pattern: $MODEL.objects.filter(...,id=...)
+          - pattern: $MODEL.objects.get(...,lead_id=...)
+          - pattern: $MODEL.objects.get(...,id=...)
+        - pattern-not: $MODEL.objects.filter(...,lead_id=request.user.id,...)
+        - pattern-not: $MODEL.objects.filter(...,id=request.user.id,...)
+        - pattern-not: $MODEL.objects.get(...,lead_id=request.user.id,...)
+        - pattern-not: $MODEL.objects.get(...,id=request.user.id,...)
+
+    message: Found BOLA attack vector. User permissions should be verified before fetching model object directly. 
+    metadata:
+      route-detect:
+        fill: red
+      category: security
+      subcategory:
+        - vuln
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      owasp:
+        - A3:2017 Sensitive Data Exposure
+        - A3:2021 Injection
+      technology:
+        - django
+    languages:
+      - python
+    severity: WARNING

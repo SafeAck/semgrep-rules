@@ -1,0 +1,25 @@
+# author: dmdhrumilmistry
+rules:
+  - id: Unrestricted-File-Upload-Vulnerability
+    patterns:
+      - pattern-either:
+        - pattern: models.FileField(...)
+        - pattern: FileField(...)
+      - pattern-not: FileField(..., vaidators=...)
+
+    message: Uploaded Files Type and Size should be validated. Sensitive Data should be stored in private bucket. Use `ImageField` while accepting images.
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      owasp:
+        - A3:2017 Sensitive Data Exposure
+        - A3:2021 Injection
+      technology:
+        - django
+    languages:
+      - python
+    severity: WARNING

@@ -1,0 +1,97 @@
+# author: dmdhrumilmistry
+rules:
+  - id: Django-Rest-Framework-UnRestricted-HTTP-Methods
+    pattern-either:
+      - patterns:
+          - pattern: |
+              class $CLASS(..., rest_framework.viewsets.ModelViewSet, ...):
+                ...
+                  
+          - pattern-not-inside: |
+              class $CLASS(..., rest_framework.viewsets.ModelViewSet, ...):
+                ...
+                permission_classes = [...]
+                ...
+
+    message: Found an UnAuthenticated Endpoint ViewClass allowing user to perform CRUD operations on the specified model in serializer class. Make sure this endpoint doesn't perform sensitive or business related operations.
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      owasp:
+        - A1:2021 Broken Access Control 
+      technology:
+        - django
+        - djangorestframework
+    languages:
+      - python
+    severity: WARNING
+
+
+  - id: Django-Rest-Framework-UnRestricted-Delete-Permission
+    pattern-either:
+      - patterns:
+          - pattern: |
+              class $CLASS(..., rest_framework.mixins.DestroyModelMixin, ...):
+                ...
+                  
+          - pattern-not-inside: |
+              class $CLASS(..., rest_framework.viewsets.DestroyModelMixin, ...):
+                ...
+                permission_classes = [...,$PERMISSIONCLASS,...]
+                ...
+
+          - metavariable-pattern:
+              metavariable: $PERMISSIONCLASS
+              pattern-either:
+                - pattern: rest_framework_api_key.permissions.HasAPIKey
+                - pattern: rest_framework.permissions.IsAuthenticated
+                - pattern: rest_framework.permissions.IsAdminUser
+
+
+    message: Found an UnAuthenticated Endpoint ViewClass allowing user to perform Delete operation on the specified model in serializer class. Make sure this endpoint doesn't perform sensitive or business related operations.
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      owasp:
+        - A1:2021 Broken Access Control 
+      technology:
+        - django
+        - djangorestframework
+    languages:
+      - python
+    severity: WARNING
+
+
+  - id: Django-Rest-Framework-Partially-Restricted-Delete-Permission
+    pattern-either:
+      - patterns:
+          - pattern: |
+              class $CLASS(..., rest_framework.mixins.DestroyModelMixin, ...):
+                ...
+                permission_classes = [...,$PERMISSIONCLASS,...]
+                ...
+
+    message: Found an Authenticated Endpoint ViewClass allowing user to perform Delete operation on the specified model in serializer class without ownership check. Make sure this endpoint doesn't perform sensitive or business related operations.
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      owasp:
+        - A1:2021 Broken Access Control 
+      technology:
+        - django
+        - djangorestframework
+    languages:
+      - python
+    severity: WARNING

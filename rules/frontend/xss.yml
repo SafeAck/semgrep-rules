@@ -1,0 +1,23 @@
+# author: dmdhrumilmistry
+rules:
+  - id: react-xss-detection
+    pattern-either:
+      - pattern: |
+          ... dangerouslySetInnerHTML = ...
+      - pattern: |
+          ... $SOMETHING.innerHTML = ...
+        
+    message: "Potential XSS vulnerability: Avoid using `.innerHTML` or `dangerouslySetInnerHTML` in React components. Use React's safe methods instead."
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+
+  - id: javascript-xss-detection
+    pattern: |
+      ... document.write($SOMETHING) ...
+    message: "Potential XSS vulnerability: Avoid using `document.write` in JavaScript. Use safer methods instead."
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
